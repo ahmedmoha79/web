@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wazambi Fleet Tracker PRO | Enterprise Fleet Intelligence</title>
+    <meta name="description" content="AI-powered fleet management with real-time GPS tracking, predictive analytics, and comprehensive vehicle monitoring">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="main.css" as="style">
+    <link rel="stylesheet" href="main.css">
+    <link rel="preload" href="main.js" as="script">
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js and GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        /* Temporary styles for layout - will be moved to main.css */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+            background: #0a0a1a;
+        }
+        
+        .corridor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        section {
+            position: relative;
+            min-height: 100vh;
+            padding: 80px 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Corridor Background -->
+    <div class="corridor-container" id="corridorScene">
+        <!-- This will be populated by Three.js -->
+    </div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <svg class="wazambi-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+                    <!-- GPS pin merged into W -->
+                    <path fill="#D2B48C" d="M100,20a20,20 0 1,1 0,40a20,20 0 1,1 0,-40Zm0,10a10,10 0 1,0 0,20a10,10 0 1,0 0,-20Z" />
+                    <!-- Left wing of W -->
+                    <path fill="#D2B48C" d="M20,80 L60,160 L90,110 L100,130 L110,110 L140,160 L180,80 L140,80 L100,140 L60,80 Z"/>
+                </svg>
+                <div class="wazambi-text">
+                    <div class="main-text">WAZAMBI</div>
+                    <div class="sub-text">GPS</div>
+                </div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#features" class="nav-link" data-depth="0.2">
+                    <span class="link-glow"></span>
+                    <span class="link-text">Features</span>
+                </a>
+                <a href="#solutions" class="nav-link" data-depth="0.4">
+                    <span class="link-glow"></span>
+                    <span class="link-text">Solutions</span>
+                </a>
+                <a href="#testimonials" class="nav-link" data-depth="0.6">
+                    <span class="link-glow"></span>
+                    <span class="link-text">Clients</span>
+                </a>
+                <a href="#pricing" class="nav-link" data-depth="0.8">
+                    <span class="link-glow"></span>
+                    <span class="link-text">Pricing</span>
+                </a>
+                <a href="#contact" class="nav-link cta" data-depth="1">
+                    <span class="link-glow"></span>
+                    <span class="link-text">Contact</span>
+                </a>
+            </div>
+            
+            <div class="mobile-menu-toggle">
+                <div class="menu-line"></div>
+                <div class="menu-line"></div>
+                <div class="menu-line"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+        <div class="section-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="title-line">Enterprise Fleet</span>
+                    <span class="title-line highlight">Intelligence Platform</span>
+                </h1>
+                
+                <p class="hero-subtitle">
+                    AI-powered fleet optimization with military-grade tracking, predictive maintenance, and real-time analytics for maximum operational efficiency
+                </p>
+                
+                <div class="hero-actions">
+                    <a href="#contact" class="hero-btn primary">
+                        <span class="btn-glow"></span>
+                        <span class="btn-text">Request Enterprise Demo</span>
+                    </a>
+                    <a href="#video-demo" class="hero-btn secondary">
+                        <span class="btn-glow"></span>
+                        <span class="btn-text">Platform Overview</span>
+                    </a>
+                </div>
+                
+                <div class="trust-badges">
+                    <div class="badge">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Military-Grade Security</span>
+                    </div>
+                    <div class="badge">
+                        <i class="bi bi-globe2"></i>
+                        <span>Global Coverage</span>
+                    </div>
+                    <div class="badge">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Trusted by 500+ Fleets</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="dashboard-preview">
+                    <div class="map-container" id="heroMap"></div>
+                    <div class="vehicle-stats">
+                        <div class="stat">
+                            <div class="count" data-count="127">127</div>
+                            <div class="label">Active Vehicles</div>
+                        </div>
+                        <div class="stat">
+                            <div class="count">1</div>
+                            <div class="label">Countries</div>
+                        </div>
+                        <div class="stat">
+                            <div class="count" data-count="23" data-dynamic="true">23</div>
+                            <div class="label">Active Alerts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <span>Scroll to Explore</span>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Advanced Features</h2>
+                <p>Discover our comprehensive suite of GPS tracking solutions</p>
+            </div>
+            
+            <div class="feature-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="tracking">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Real-Time Tracking</span>
+                    </button>
+                    <button class="tab-btn" data-tab="analytics">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Driver Analytics</span>
+                    </button>
+                    <button class="tab-btn" data-tab="health">
+                        <i class="bi bi-heart-pulse"></i>
+                        <span>Vehicle Health</span>
+                    </button>
+                    <button class="tab-btn" data-tab="fleet">
+                        <i class="bi bi-truck"></i>
+                        <span>Fleet Management</span>
+                    </button>
+                    <button class="tab-btn" data-tab="alerts">
+                        <i class="bi bi-bell"></i>
+                        <span>Smart Alerts</span>
+                    </button>
+                </div>
+
+                <div class="tab-content active" id="tracking">
+                    <div class="feature-grid">
+                        <div class="feature-text">
+                            <h3>Real-Time GPS Tracking</h3>
+                            <p>Monitor your fleet's location in real-time with our advanced GPS tracking system.</p>
+                            <ul class="feature-list">
+                                <li><i class="bi bi-check-circle"></i> Live location updates</li>
+                                <li><i class="bi bi-check-circle"></i> Historical route playback</li>
+                                <li><i class="bi bi-check-circle"></i> Geofencing capabilities</li>
+                                <li><i class="bi bi-check-circle"></i> Speed monitoring</li>
+                            </ul>
+                        </div>
+                        <div class="feature-visual">
+                            <img src="images/feature-tracking.jpg" alt="GPS Tracking Map" class="feature-image">
+                            <div class="feature-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="analytics">
+                    <div class="feature-grid">
+                        <div class="feature-text">
+                            <h3>Driver Analytics</h3>
+                            <p>Gain insights into driver behavior and performance with detailed analytics.</p>
+                            <ul class="feature-list">
+                                <li><i class="bi bi-check-circle"></i> Driver scorecards</li>
+                                <li><i class="bi bi-check-circle"></i> Behavior analysis</li>
+                                <li><i class="bi bi-check-circle"></i> Performance metrics</li>
+                                <li><i class="bi bi-check-circle"></i> Training recommendations</li>
+                            </ul>
+                        </div>
+                        <div class="feature-visual">
+                            <img src="images/feature-analytics.jpg" alt="Analytics Dashboard" class="feature-image">
+                            <div class="feature-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="health">
+                    <div class="feature-grid">
+                        <div class="feature-text">
+                            <h3>Vehicle Health Monitoring</h3>
+                            <p>Keep your fleet in optimal condition with real-time vehicle diagnostics.</p>
+                            <ul class="feature-list">
+                                <li><i class="bi bi-check-circle"></i> Engine diagnostics</li>
+                                <li><i class="bi bi-check-circle"></i> Maintenance alerts</li>
+                                <li><i class="bi bi-check-circle"></i> Fuel monitoring</li>
+                                <li><i class="bi bi-check-circle"></i> Battery status</li>
+                            </ul>
+                        </div>
+                        <div class="feature-visual">
+                            <img src="images/feature-health.jpg" alt="Vehicle Health Dashboard" class="feature-image">
+                            <div class="feature-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="fleet">
+                    <div class="feature-grid">
+                        <div class="feature-text">
+                            <h3>Fleet Management</h3>
+                            <p>Streamline your fleet operations with our comprehensive management tools.</p>
+                            <ul class="feature-list">
+                                <li><i class="bi bi-check-circle"></i> Route optimization</li>
+                                <li><i class="bi bi-check-circle"></i> Fuel management</li>
+                                <li><i class="bi bi-check-circle"></i> Maintenance scheduling</li>
+                                <li><i class="bi bi-check-circle"></i> Asset tracking</li>
+                            </ul>
+                        </div>
+                        <div class="feature-visual">
+                            <img src="images/feature-fleet.jpg" alt="Fleet Management Dashboard" class="feature-image">
+                            <div class="feature-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="alerts">
+                    <div class="feature-grid">
+                        <div class="feature-text">
+                            <h3>Smart Alerts</h3>
+                            <p>Stay informed with intelligent alerting system for your fleet.</p>
+                            <ul class="feature-list">
+                                <li><i class="bi bi-check-circle"></i> Custom alert rules</li>
+                                <li><i class="bi bi-check-circle"></i> Instant notifications</li>
+                                <li><i class="bi bi-check-circle"></i> Geofence alerts</li>
+                                <li><i class="bi bi-check-circle"></i> Maintenance reminders</li>
+                            </ul>
+                        </div>
+                        <div class="feature-visual">
+                            <img src="images/feature-alerts.jpg" alt="Smart Alerts Dashboard" class="feature-image">
+                            <div class="feature-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Demo Section -->
+    <section id="video-demo" class="video-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Enterprise Platform <span>Walkthrough</span></h2>
+                <p>See how Wazambi Fleet Tracker PRO transforms fleet management operations</p>
+            </div>
+            
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video class="demo-video" poster="images/video-poster.jpg">
+                        <source src="video/demo.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-controls">
+                        <button class="play-btn">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                        <div class="video-progress">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="video-time">
+                            <span class="current-time">0:00</span>
+                            <span class="duration">0:00</span>
+                        </div>
+                        <button class="fullscreen-btn">
+                            <i class="bi bi-fullscreen"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section id="solutions" class="solutions-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Industry-Specific Fleet <span>Solutions</span></h2>
+                <p>Tailored configurations for different fleet operations</p>
+            </div>
+            
+            <div class="solutions-grid">
+                <div class="solution-card">
+                    <div class="card-icon">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h3>Logistics & Distribution</h3>
+                    <p>End-to-end supply chain visibility with route optimization</p>
+                    <ul class="solution-features">
+                        <li><i class="bi bi-check-circle"></i> Multi-stop route optimization</li>
+                        <li><i class="bi bi-check-circle"></i> Electronic proof of delivery</li>
+                        <li><i class="bi bi-check-circle"></i> Temperature monitoring</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Logistics%20Solution%20Inquiry" class="solution-btn" target="_blank">
+                        Request Logistics Demo
+                    </a>
+                </div>
+                
+                <div class="solution-card featured">
+                    <div class="featured-badge">Most Popular</div>
+                    <div class="card-icon">
+                        <i class="bi bi-taxi-front"></i>
+                    </div>
+                    <h3>Passenger Transport</h3>
+                    <p>Compliance and safety solutions for passenger vehicles</p>
+                    <ul class="solution-features">
+                        <li><i class="bi bi-check-circle"></i> Passenger counting systems</li>
+                        <li><i class="bi bi-check-circle"></i> Driver performance scoring</li>
+                        <li><i class="bi bi-check-circle"></i> Panic button integration</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Passenger%20Transport%20Inquiry" class="solution-btn" target="_blank">
+                        Request Transport Demo
+                    </a>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="card-icon">
+                        <i class="bi bi-building-gear"></i>
+                    </div>
+                    <h3>Construction & Mining</h3>
+                    <p>Asset tracking for heavy equipment fleets</p>
+                    <ul class="solution-features">
+                        <li><i class="bi bi-check-circle"></i> Equipment idle monitoring</li>
+                        <li><i class="bi bi-check-circle"></i> Fuel consumption analytics</li>
+                        <li><i class="bi bi-check-circle"></i> Geo-restricted zones</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Construction%20Solution%20Inquiry" class="solution-btn" target="_blank">
+                        Request Heavy Equipment Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Enterprise Client <span>Success Stories</span></h2>
+                <p>Leading Zambian businesses trust Wazambi Fleet Tracker PRO</p>
+            </div>
+            
+            <div class="testimonials-slider">
+                <div class="testimonial active">
+                    <div class="testimonial-content">
+                        <div class="quote">
+                            "Reduced our fuel costs by 22% in the first quarter through route optimization."
+                        </div>
+                        <div class="author">
+                            <div class="author-image">
+                                <img src="images/testimonial-1.jpg" alt="James O." loading="lazy">
+                            </div>
+                            <div class="author-info">
+                                <h4>James O.</h4>
+                                <p>Operations Director, Lusaka Logistics</p>
+                                <div class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="quote">
+                            "Recovered two stolen trucks within hours using real-time tracking."
+                        </div>
+                        <div class="author">
+                            <div class="author-image">
+                                <img src="images/testimonial-2.jpg" alt="Fatima K." loading="lazy">
+                            </div>
+                            <div class="author-info">
+                                <h4>Fatima K.</h4>
+                                <p>CEO, Copperbelt Transport</p>
+                                <div class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <div class="quote">
+                            "Improved drivers' safety scores by 38% with behavior monitoring."
+                        </div>
+                        <div class="author">
+                            <div class="author-image">
+                                <img src="images/testimonial-3.jpg" alt="Daniel T." loading="lazy">
+                            </div>
+                            <div class="author-info">
+                                <h4>Daniel T.</h4>
+                                <p>Fleet Manager, Mining Solutions Ltd</p>
+                                <div class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slider-controls">
+                    <button class="slider-prev"><i class="bi bi-chevron-left"></i></button>
+                    <div class="slider-dots">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                    <button class="slider-next"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Transparent Enterprise <span>Pricing</span></h2>
+                <p>Flexible plans designed to scale with your fleet operations</p>
+            </div>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="card-header">
+                        <h3>Basic Package</h3>
+                        <p>Essential tracking for fleet operations</p>
+                        <div class="price-container">
+                            <div class="price">
+                                <span class="amount">$80</span>
+                                <span class="period">per truck installation</span>
+                            </div>
+                            <div class="price">
+                                <span class="amount">$15</span>
+                                <span class="period">monthly per truck</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="features">
+                        <li><i class="bi bi-check-circle"></i> 24/7 Real-Time Tracking</li>
+                        <li><i class="bi bi-check-circle"></i> Driver Safety Monitoring</li>
+                        <li><i class="bi bi-check-circle"></i> Load Protection Alerts</li>
+                        <li><i class="bi bi-check-circle"></i> Instant Crash Notifications</li>
+                        <li><i class="bi bi-check-circle"></i> Driver Behavior Reports</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Basic%20Package%20Inquiry" class="pricing-btn" target="_blank">Get Started</a>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="featured-badge">Recommended</div>
+                    <div class="card-header">
+                        <h3>Premium Package</h3>
+                        <p>Advanced analytics and fuel monitoring</p>
+                        <div class="price-container">
+                            <div class="price">
+                                <span class="amount">$100</span>
+                                <span class="period">per truck installation</span>
+                            </div>
+                            <div class="price">
+                                <span class="amount">$15</span>
+                                <span class="period">monthly per truck</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="features">
+                        <li><i class="bi bi-check-circle"></i> Everything in Basic</li>
+                        <li><i class="bi bi-check-circle"></i> Live Fuel Monitoring</li>
+                        <li><i class="bi bi-check-circle"></i> Fuel Theft Alerts</li>
+                        <li><i class="bi bi-check-circle"></i> Fuel Efficiency Reports</li>
+                        <li><i class="bi bi-check-circle"></i> Advanced Analytics</li>
+                        <li><i class="bi bi-check-circle"></i> Predictive Maintenance</li>
+                        <li><i class="bi bi-check-circle"></i> Custom Dashboard</li>
+                        <li><i class="bi bi-check-circle"></i> API Access</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Premium%20Package%20Inquiry" class="pricing-btn" target="_blank">Get Started</a>
+                </div>
+                
+                <div class="pricing-card">
+                    <div class="card-header">
+                        <h3>Enterprise Solution</h3>
+                        <p>Custom-tailored for large fleets</p>
+                        <div class="price-container">
+                            <div class="price">
+                                <span class="amount">Custom</span>
+                                <span class="period">Pricing</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="features">
+                        <li><i class="bi bi-check-circle"></i> All Premium Features</li>
+                        <li><i class="bi bi-check-circle"></i> Dedicated Server</li>
+                        <li><i class="bi bi-check-circle"></i> White-label Dashboard</li>
+                        <li><i class="bi bi-check-circle"></i> Advanced API Access</li>
+                        <li><i class="bi bi-check-circle"></i> Custom Hardware</li>
+                        <li><i class="bi bi-check-circle"></i> 24/7 Priority Support</li>
+                        <li><i class="bi bi-check-circle"></i> Account Manager</li>
+                        <li><i class="bi bi-check-circle"></i> SLA Guarantee</li>
+                    </ul>
+                    <a href="https://wa.me/260966499575?text=Enterprise%20Solution%20Inquiry" class="pricing-btn" target="_blank">Request Quote</a>
+                </div>
+            </div>
+            
+            <div class="enterprise-cta">
+                <p>Need custom features? <a href="https://wa.me/260966499575?text=Custom%20Solution%20Inquiry" target="_blank">Contact our team</a> for tailored solutions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="section-container">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h2>Ready to Transform Your Fleet Operations?</h2>
+                    <p>Our solutions team is available to discuss your requirements</p>
+                    
+                    <div class="contact-methods">
+                        <div class="method">
+                            <div class="method-icon">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div class="method-details">
+                                <h4>Sales Inquiries</h4>
+                                <p>+260 966 499 575</p>
+                                <p>yunus@wazambi.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="method">
+                            <div class="method-icon">
+                                <i class="bi bi-headset"></i>
+                            </div>
+                            <div class="method-details">
+                                <h4>Technical Support</h4>
+                                <p>+260 766 773 673</p>
+                                <p>support@wazambi.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="method">
+                            <div class="method-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="method-details">
+                                <h4>Headquarters</h4>
+                                <p>Lusaka emmasdale</p>
+                                <p>WAZAMBI building</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-social">
+                        <a href="https://www.facebook.com/share/16BLbJV5yL/" class="social-link" target="_blank">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="social-link" target="_blank">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                        <a href="https://x.com/yunushersi" class="social-link" target="_blank">
+                            <i class="bi bi-twitter-x"></i>
+                        </a>
+                        <a href="https://www.instagram.com/wazambi_gps?igsh=cWh6MjEwbnJqM2ph" class="social-link" target="_blank">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="contact-form-container">
+                    <form id="contactForm" action="https://formspree.io/f/mnnpgkzj" method="POST">
+                        <h3>Request a Custom Demo</h3>
+                        
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Full Name*" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Business Email*" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Phone Number*" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="text" id="company" name="company" placeholder="Company Name*" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select id="fleet-size" name="fleet-size" required>
+                                <option value="">Fleet Size*</option>
+                                <option value="1-10">1-10 Vehicles</option>
+                                <option value="11-50">11-50 Vehicles</option>
+                                <option value="51-100">51-100 Vehicles</option>
+                                <option value="101+">101+ Vehicles</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <select id="interest" name="interest" required>
+                                <option value="">Primary Interest*</option>
+                                <option value="tracking">Real-Time Tracking</option>
+                                <option value="safety">Driver Safety</option>
+                                <option value="maintenance">Vehicle Maintenance</option>
+                                <option value="optimization">Route Optimization</option>
+                                <option value="compliance">Regulatory Compliance</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <textarea id="message" name="message" placeholder="Tell us about your fleet challenges and requirements*" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-text">Request Personalized Demo</span>
+                            <span class="btn-icon"><i class="bi bi-send"></i></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Float Button -->
+    <div class="whatsapp-float">
+        <a href="https://wa.me/260966499575" target="_blank" aria-label="Chat on WhatsApp">
+            <i class="bi bi-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="logo-graphic">
+                            <div class="logo-particle"></div>
+                        </div>
+                        <span class="logo-text">WAZAMBI</span>
+                    </div>
+                    <p class="footer-tagline">Advanced Fleet Intelligence Platform</p>
+                    <p class="footer-copyright">&copy; 2023 Wazambi Technologies Ltd. All rights reserved.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#solutions">Solutions</a></li>
+                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="#video-demo">Demo</a></li>
+                            <li><a href="#">API Documentation</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Case Studies</a></li>
+                            <li><a href="#">Webinars</a></li>
+                            <li><a href="https://wa.me/260966499575">Help Center</a></li>
+                            <li><a href="https://track.wazambi.com">Developer Portal</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="https://www.instagram.com/wazambi_gps?igsh=cWh6MjEwbnJqM2ph">About Us</a></li>
+                            <li><a href="https://wa.me/260966499575">Careers</a></li>
+                            <li><a href="track.wazambi.com">Partners</a></li>
+                            <li><a href="https://wa.me/260966499575">Press</a></li>
+                            <li><a href="https://wa.me/260966499575">Contact</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="link-group">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="https://track.wazambi.com">Privacy Policy</a></li>
+                            <li><a href="https://track.wazambi.com">Terms of Service</a></li>
+                            <li><a href="https://track.wazambi.com">Service Level Agreement</a></li>
+                            <li><a href="https://track.wazambi.com">Cookie Policy</a></li>
+                            <li><a href="https://track.wazambi.com">GDPR Compliance</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-legal">
+                    <span>Registered in Zambia: Company No. 93815</span>
+                    <span>VAT No. ZM6293</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    
+    <!-- Three.js Corridor Scene -->
+    <script>
+        // This will be implemented in main.js
+        // Creating an immersive 3D corridor effect with Three.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('corridorScene').appendChild(renderer.domElement);
+            
+            // Corridor geometry
+            const corridorGeometry = new THREE.BoxGeometry(50, 30, 500);
+            const corridorMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x0a0a1a,
+                side: THREE.BackSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const corridor = new THREE.Mesh(corridorGeometry, corridorMaterial);
+            scene.add(corridor);
+            
+            // Add corridor details
+            const lineGeometry = new THREE.BufferGeometry();
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x2a5bd7 });
+            
+            // Add lighting effects
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x2a5bd7, 0.5);
+            directionalLight.position.set(0, 1, 0);
+            scene.add(directionalLight);
+            
+            // Camera position
+            camera.position.z = 5;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                corridor.rotation.y += 0.001;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        });
+    </script>
+</body>
+</html>
