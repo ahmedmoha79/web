@@ -132,6 +132,38 @@
         .leaflet-control-zoom a:hover {
             background: rgba(42, 91, 215, 0.2) !important;
         }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .wazambi-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+
+        .main-text {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #D2B48C;
+        }
+
+        .sub-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            color: #D2B48C;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -144,12 +176,7 @@
     <nav class="main-nav">
         <div class="nav-container">
             <div class="nav-logo">
-                <svg class="wazambi-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-                    <!-- GPS pin merged into W -->
-                    <path fill="#D2B48C" d="M100,20a20,20 0 1,1 0,40a20,20 0 1,1 0,-40Zm0,10a10,10 0 1,0 0,20a10,10 0 1,0 0,-20Z" />
-                    <!-- Left wing of W -->
-                    <path fill="#D2B48C" d="M20,80 L60,160 L90,110 L100,130 L110,110 L140,160 L180,80 L140,80 L100,140 L60,80 Z"/>
-                </svg>
+                <img src="images/wazambi.png" alt="Wazambi Logo" class="nav-logo-img">
                 <div class="wazambi-text">
                     <div class="main-text">WAZAMBI</div>
                     <div class="sub-text">GPS</div>
