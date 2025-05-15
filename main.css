@@ -655,16 +655,18 @@ ul, ol {
 }
 
 .video-container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
     border-radius: var(--border-radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    background: var(--light-bg);
 }
 
 .video-wrapper {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    width: 100%;
+    padding-bottom: 48%;
     height: 0;
     background: var(--light-bg);
 }
@@ -675,7 +677,28 @@ ul, ol {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #000;
+    display: block;
+}
+
+.video-wrapper::before,
+.video-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background: #000;
+    z-index: 1;
+}
+
+.video-wrapper::before {
+    top: 0;
+}
+
+.video-wrapper::after {
+    bottom: 0;
 }
 
 .video-controls {
@@ -683,21 +706,22 @@ ul, ol {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-    padding: 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7) 50%, transparent);
+    padding: 2rem 1rem 1rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     opacity: 0;
-    transition: var(--transition-medium);
+    transition: opacity 0.3s ease;
 }
 
-.video-wrapper:hover .video-controls {
+.video-wrapper:hover .video-controls,
+.video-wrapper:active .video-controls {
     opacity: 1;
 }
 
 .play-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
     font-size: 1.5rem;
@@ -709,10 +733,12 @@ ul, ol {
     justify-content: center;
     border-radius: 50%;
     transition: var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .play-btn:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
 }
 
 .video-progress {
@@ -721,6 +747,8 @@ ul, ol {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 .progress-bar {
@@ -729,12 +757,13 @@ ul, ol {
     background: var(--primary-color);
     border-radius: 2px;
     position: relative;
+    transition: width 0.1s linear;
 }
 
 .progress-bar::after {
     content: '';
     position: absolute;
-    right: 0;
+    right: -6px;
     top: 50%;
     transform: translateY(-50%);
     width: 12px;
@@ -754,6 +783,8 @@ ul, ol {
     font-size: 0.875rem;
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
+    min-width: 90px;
 }
 
 .fullscreen-btn {
@@ -763,10 +794,36 @@ ul, ol {
     font-size: 1.25rem;
     cursor: pointer;
     transition: var(--transition-fast);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .fullscreen-btn:hover {
     color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+@media (max-width: 1400px) {
+    .video-container {
+        max-width: 85%;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .video-container {
+        max-width: 95%;
+        margin: 0 auto;
+        border-radius: var(--border-radius-md);
+    }
+
+    .video-wrapper {
+        padding-bottom: 48%;
+    }
 }
 
 /* ==========================================================================

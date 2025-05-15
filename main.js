@@ -391,6 +391,7 @@ class OptimizedVisualEngine {
     const currentTimeEl = document.querySelector('.current-time');
     const durationEl = document.querySelector('.duration');
     const fullscreenBtn = document.querySelector('.fullscreen-btn');
+    const videoWrapper = document.querySelector('.video-wrapper');
 
     if (!video || !playBtn || !progressBar || !videoProgress) return;
 
@@ -403,52 +404,199 @@ class OptimizedVisualEngine {
 
     // Update progress bar and time displays
     const updateProgress = () => {
+      if (!video.duration) return;
       const progress = (video.currentTime / video.duration) * 100;
       progressBar.style.width = `${progress}%`;
       currentTimeEl.textContent = formatTime(video.currentTime);
       durationEl.textContent = formatTime(video.duration);
     };
 
-    // Toggle play/pause
+    // Seek functionality
+    const seek = (e) => {
+      const rect = videoProgress.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / videoProgress.offsetWidth;
+      video.currentTime = pos * video.duration;
+      updateProgress();
+    };
+
+    // Handle seeking while dragging
+    let isDragging = false;
+    
+    videoProgress.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      seek(e);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        seek(e);
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Touch events for mobile seeking
+    videoProgress.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      seek({ clientX: touch.clientX });
+    });
+
+    videoProgress.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // Prevent scrolling while seeking
+      const touch = e.touches[0];
+      seek({ clientX: touch.clientX });
+    });
+
+    // Toggle play/pause with better state management
     const togglePlay = () => {
       if (video.paused) {
-        video.play();
+        video.play().catch(err => {
+          console.error('Error playing video:', err);
+        });
         playBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        videoWrapper.classList.add('playing');
       } else {
         video.pause();
         playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+        videoWrapper.classList.remove('playing');
+      }
+    };
+
+    // Double click to toggle fullscreen
+    videoWrapper.addEventListener('dblclick', () => {
+      toggleFullscreen();
+    });
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (!video) return;
+
+      // Only handle keyboard events if the video is in viewport
+      const rect = video.getBoundingClientRect();
+      const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+      
+      if (!isInViewport) return;
+
+      switch (e.key.toLowerCase()) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'f':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'arrowleft':
+          e.preventDefault();
+          video.currentTime = Math.max(video.currentTime - 5, 0);
+          break;
+        case 'arrowright':
+          e.preventDefault();
+          video.currentTime = Math.min(video.currentTime + 5, video.duration);
+          break;
+        case 'm':
+          e.preventDefault();
+          video.muted = !video.muted;
+          break;
+        case '0':
+        case 'home':
+          e.preventDefault();
+          video.currentTime = 0;
+          break;
+        case 'end':
+          e.preventDefault();
+          video.currentTime = video.duration;
+          break;
+      }
+    });
+
+    // Preview thumbnail on hover (if available)
+    let previewThrottle;
+    videoProgress.addEventListener('mousemove', (e) => {
+      clearTimeout(previewThrottle);
+      previewThrottle = setTimeout(() => {
+        const rect = videoProgress.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / videoProgress.offsetWidth;
+        const previewTime = pos * video.duration;
+        // Update preview time display
+        currentTimeEl.textContent = formatTime(previewTime);
+      }, 50);
+    });
+
+    videoProgress.addEventListener('mouseleave', () => {
+      clearTimeout(previewThrottle);
+      updateProgress(); // Reset to current time
+    });
+
+    // Fullscreen functionality with better cross-browser support
+    const toggleFullscreen = () => {
+      if (!document.fullscreenElement && 
+          !document.webkitFullscreenElement && 
+          !document.mozFullScreenElement) {
+        if (videoWrapper.requestFullscreen) {
+          videoWrapper.requestFullscreen();
+        } else if (videoWrapper.webkitRequestFullscreen) {
+          videoWrapper.webkitRequestFullscreen();
+        } else if (videoWrapper.mozRequestFullScreen) {
+          videoWrapper.mozRequestFullScreen();
+        }
+        fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        }
+        fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen"></i>';
       }
     };
 
     // Event Listeners
     playBtn.addEventListener('click', togglePlay);
     video.addEventListener('click', togglePlay);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
 
     video.addEventListener('loadedmetadata', () => {
       durationEl.textContent = formatTime(video.duration);
+      updateProgress();
     });
 
     video.addEventListener('timeupdate', updateProgress);
-
-    // Click on progress bar to seek
-    videoProgress.addEventListener('click', (e) => {
-      const rect = videoProgress.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / videoProgress.offsetWidth;
-      video.currentTime = pos * video.duration;
+    video.addEventListener('ended', () => {
+      playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+      videoWrapper.classList.remove('playing');
     });
 
-    // Fullscreen functionality
-    if (fullscreenBtn) {
-      fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-          video.requestFullscreen().catch(err => {
-            console.error(`Error attempting to enable fullscreen: ${err.message}`);
-          });
-        } else {
-          document.exitFullscreen();
-        }
-      });
+    // Handle fullscreen change events
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+    document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+
+    function updateFullscreenButton() {
+      const isFullscreen = document.fullscreenElement || 
+                          document.webkitFullscreenElement || 
+                          document.mozFullScreenElement;
+      fullscreenBtn.innerHTML = isFullscreen ? 
+        '<i class="bi bi-fullscreen-exit"></i>' : 
+        '<i class="bi bi-fullscreen"></i>';
     }
+
+    // Add loading indicator
+    video.addEventListener('waiting', () => {
+      videoWrapper.classList.add('loading');
+    });
+
+    video.addEventListener('canplay', () => {
+      videoWrapper.classList.remove('loading');
+    });
+
+    // Initialize with play button
+    playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
   }
 
   setupEventListeners() {
