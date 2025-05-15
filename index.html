@@ -165,119 +165,6 @@
             color: #D2B48C;
             letter-spacing: 1px;
         }
-
-        /* Tab Content Styles */
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .tab-content.active {
-            display: block;
-            opacity: 1;
-        }
-        
-        /* Tab Button Styles */
-        .tab-btn {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-btn.active {
-            color: var(--primary-color);
-            background: rgba(42, 91, 215, 0.1);
-        }
-        
-        /* Video Player Styles */
-        .video-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            background: #000;
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-        }
-        
-        .demo-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Changed from cover to contain */
-            background: #000; /* Black background for letterboxing */
-        }
-        
-        @media (max-width: 768px) {
-            .video-container {
-                padding: 0;
-                width: 100vw;
-                margin-left: 50%;
-                transform: translateX(-50%);
-            }
-            
-            .video-wrapper {
-                padding-bottom: 56.25%; /* Maintain 16:9 on mobile */
-                border-radius: 0;
-            }
-        }
-        
-        .video-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .video-wrapper:hover .video-controls {
-            opacity: 1;
-        }
-        
-        .video-progress {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: var(--primary-color);
-            width: 0;
-        }
-        
-        .play-btn, .fullscreen-btn {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .play-btn:hover, .fullscreen-btn:hover {
-            color: var(--primary-color);
-        }
-        
-        .video-time {
-            color: white;
-            font-size: 0.8em;
-            margin: 0 10px;
-        }
     </style>
 </head>
 <body>
@@ -333,8 +220,8 @@
         <div class="section-container">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    <span class="title-line">Enterprise Fleet</span>
-                    <span class="title-line highlight">Intelligence Platform</span>
+                    <span class="title-line">Zambia's</span>
+                    <span class="title-line highlight">Real-Time Tracking, Built for Local Roads</span>
                 </h1>
                 
                 <p class="hero-subtitle">
@@ -407,7 +294,7 @@
                 <p>Discover our comprehensive suite of GPS tracking solutions</p>
             </div>
             
-            <div class="feature-tabs" data-feature="features">
+            <div class="feature-tabs">
                 <div class="tab-buttons">
                     <button class="tab-btn active" data-tab="tracking">
                         <i class="bi bi-geo-alt"></i>
@@ -540,7 +427,7 @@
             
             <div class="video-container" data-feature="video">
                 <div class="video-wrapper">
-                    <video class="demo-video" poster="images/video-poster.jpg">
+                    <video class="demo-video" poster="images/video-poster.png" preload="auto">
                         <source src="images/demo.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
@@ -626,14 +513,14 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials-section">
+    <section id="testimonials" class="testimonials-section" data-feature="testimonials">
         <div class="section-container">
             <div class="section-header">
                 <h2>Enterprise Client <span>Success Stories</span></h2>
                 <p>Leading Zambian businesses trust Wazambi Fleet Tracker PRO</p>
             </div>
             
-            <div class="testimonials-slider" data-feature="testimonials">
+            <div class="testimonials-slider">
                 <div class="testimonial active">
                     <div class="testimonial-content">
                         <div class="quote">

@@ -454,11 +454,43 @@ class OptimizedVisualEngine {
 
     if (!video || !playBtn || !progressBar || !videoProgress) return;
 
-    // Add click event to play button
-    playBtn.addEventListener('click', () => togglePlay());
+    // Preload video metadata
+    video.preload = 'metadata';
+    
+    // Force load video when in viewport
+    const loadVideo = () => {
+      if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        video.load();
+      }
+    };
+
+    // Use Intersection Observer to load video when in view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          loadVideo();
+          observer.unobserve(entry.target);
+        }
+      });
+    });
+
+    observer.observe(video);
+
+    // Add click event to play button with error handling
+    playBtn.addEventListener('click', () => {
+      togglePlay().catch(err => {
+        console.error('Error playing video:', err);
+        // Retry playing
+        setTimeout(() => togglePlay(), 1000);
+      });
+    });
     
     // Add click event to video
-    video.addEventListener('click', () => togglePlay());
+    video.addEventListener('click', () => {
+      togglePlay().catch(err => {
+        console.error('Error playing video:', err);
+      });
+    });
     
     // Update progress as video plays
     video.addEventListener('timeupdate', () => updateProgress());
