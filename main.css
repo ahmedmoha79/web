@@ -1422,39 +1422,20 @@ ul, ol {
 .footer-logo {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
 }
 
-.logo-graphic {
-    position: relative;
-    width: 40px;
-    height: 40px;
-}
-
-.logo-particle {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
-    animation: particlePulse 3s infinite ease-in-out;
-}
-
-.logo-text {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    font-size: 1.5rem;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.footer-logo-img {
+    width: 200px;
+    height: auto;
+    object-fit: contain;
 }
 
 .footer-tagline {
     color: var(--text-secondary);
     font-size: 0.9375rem;
+    margin-top: 0.5rem;
 }
 
 .footer-copyright {
@@ -1636,8 +1617,13 @@ ul, ol {
         text-align: center;
     }
     
+    .footer-logo {
+        justify-content: center;
+    }
+    
     .footer-links {
         grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
     }
 }
 
@@ -1697,8 +1683,26 @@ ul, ol {
         grid-template-columns: 1fr;
     }
     
-    .footer-links {
+    .footer-logo-img {
+        width: 150px;
+    }
+    
+    .footer-grid {
         grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .footer-brand {
+        text-align: center;
+    }
+    
+    .footer-logo {
+        justify-content: center;
+    }
+    
+    .footer-links {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
     }
 }
 
@@ -1745,6 +1749,20 @@ ul, ol {
         width: 50px;
         height: 50px;
         font-size: 1.5rem;
+    }
+    
+    .footer-logo-img {
+        width: 120px;
+    }
+    
+    .footer-links {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .link-group h4::after {
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
