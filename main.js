@@ -1,158 +1,223 @@
 /**
  * Wazambi Website - Optimized Visual Experience
  * Focused on smooth animations and visual effects
- * Version 2.0
+ * Version 2.1 - Optimized for Render Free Tier
  */
 
 class OptimizedVisualEngine {
   constructor() {
-    // Initialize GSAP
-    if (typeof gsap === 'undefined') {
-      console.error('GSAP is not loaded. Please ensure GSAP is included before this script.');
-      return;
-    }
+    // Initialize core state
+    this.initialized = false;
+    this.modules = {};
+    this.animationFrameId = null;
     
-    // Initialize core modules
-    this.modules = {
-      gsap: gsap
+    // Debounced resize handler
+    this.resizeHandler = this.debounce(this.handleResize.bind(this), 250);
+    
+    // Initialize only when needed
+    if (document.readyState === 'complete') {
+      this.lazyInitialize();
+    } else {
+      window.addEventListener('load', () => this.lazyInitialize());
+    }
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
     };
-    
-    // Register ScrollTrigger and ScrollToPlugin if available
-    if (typeof ScrollTrigger !== 'undefined') {
-      gsap.registerPlugin(ScrollTrigger);
-      this.modules.scrollTrigger = ScrollTrigger;
-    }
-    if (typeof ScrollToPlugin !== 'undefined') {
-      gsap.registerPlugin(ScrollToPlugin);
-    }
-    
-    this.initialize();
   }
 
-  async initialize() {
-    try {
-      await this.loadCoreModules();
-      this.setupEventListeners();
+  async lazyInitialize() {
+    if (this.initialized) return;
+    
+    // Load GSAP only if needed
+    if (document.querySelector('.reveal-on-scroll, .testimonial-slider')) {
+      await this.loadGSAP();
+    }
+    
+    this.setupEventListeners();
+    
+    // Initialize features only if their elements exist
+    if (document.getElementById('corridorScene')) {
       this.initCorridorScene();
+    }
+    
+    if (document.querySelector('.reveal-on-scroll')) {
       this.setupScrollReveal();
+    }
+    
+    if (document.querySelector('a[href^="#"]')) {
       this.setupSmoothScrolling();
-      this.initTestimonialSlider();
-      this.initFeatureTabs();
-      this.initVideoPlayer();
+    }
+    
+    // Lazy load other features
+    this.lazyLoadFeatures();
+    
+    this.initialized = true;
+  }
+
+  async loadGSAP() {
+    try {
+      // Load GSAP core
+      const gsapScript = document.createElement('script');
+      gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
+      await new Promise((resolve) => {
+        gsapScript.onload = resolve;
+        document.head.appendChild(gsapScript);
+      });
+      
+      this.modules.gsap = window.gsap;
+      
+      // Load ScrollTrigger only if needed
+      if (document.querySelector('.reveal-on-scroll')) {
+        const scrollTriggerScript = document.createElement('script');
+        scrollTriggerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
+        await new Promise((resolve) => {
+          scrollTriggerScript.onload = resolve;
+          document.head.appendChild(scrollTriggerScript);
+        });
+        this.modules.gsap.registerPlugin(ScrollTrigger);
+      }
     } catch (error) {
-      console.error('Initialization error:', error);
+      console.error('Failed to load GSAP:', error);
     }
   }
 
-  async loadCoreModules() {
-    try {
-      // Load only necessary Three.js
-      const threejs = await import('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
-      this.modules.threejs = threejs;
-    } catch (error) {
-      console.error('Failed to load Three.js:', error);
-    }
+  async lazyLoadFeatures() {
+    // Load features only when they scroll into view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const feature = entry.target.dataset.feature;
+          switch (feature) {
+            case 'testimonials':
+              this.initTestimonialSlider();
+              break;
+            case 'features':
+              this.initFeatureTabs();
+              break;
+            case 'video':
+              this.initVideoPlayer();
+              break;
+          }
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    // Observe feature containers
+    document.querySelectorAll('[data-feature]').forEach(el => observer.observe(el));
   }
 
   // =========================================================================
   // OPTIMIZED 3D CORRIDOR SCENE
   // =========================================================================
-  initCorridorScene() {
+  async initCorridorScene() {
     const corridorContainer = document.getElementById('corridorScene');
     if (!corridorContainer) return;
 
-    // Scene setup with optimized settings
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
-      alpha: true, 
-      antialias: false, // Disable antialiasing for better performance
-      powerPreference: "high-performance"
-    });
-    
-    // Optimize renderer settings
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap pixel ratio
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    
-    corridorContainer.appendChild(renderer.domElement);
-
-    // Simplified corridor parameters
-    const corridorParams = {
-      width: 30,
-      height: 15,
-      depth: 300,
-      segmentCount: 50, // Reduced segment count
-      particleCount: 500 // Reduced particle count
-    };
-
-    // Create optimized tunnel effect
-    this.createOptimizedTunnel(scene, corridorParams);
-
-    // Add minimal particles
-    this.createOptimizedParticles(scene, corridorParams);
-
-    // Basic lighting setup
-    this.setupBasicLighting(scene);
-
-    // Camera positioning
-    camera.position.set(0, 3, 15);
-    const cameraTarget = new THREE.Vector3(0, 0, -100);
-    
-    // Optimized animation loop
-    const clock = new THREE.Clock();
-    let lastTime = 0;
-    
-    const animate = () => {
-      requestAnimationFrame(animate);
+    try {
+      // Dynamically import Three.js only when needed
+      const THREE = await import('https://cdn.skypack.dev/three@0.132.2');
       
-      const time = clock.getElapsedTime();
-      const deltaTime = time - lastTime;
-      lastTime = time;
+      // Optimized scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       
-      // Simple camera movement
-      camera.position.z -= deltaTime * 10;
-      camera.lookAt(cameraTarget);
+      const renderer = new THREE.WebGLRenderer({ 
+        alpha: true, 
+        antialias: false,
+        powerPreference: "high-performance",
+        precision: "mediump" // Use medium precision for better performance
+      });
       
-      // Reset camera position
-      if (camera.position.z < -corridorParams.depth * 0.5) {
-        camera.position.z = 15;
-      }
-      
-      renderer.render(scene, camera);
-    };
-    
-    animate();
+      // Optimize renderer
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      corridorContainer.appendChild(renderer.domElement);
 
-    // Optimized window resize handler
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
+      // Reduced complexity parameters
+      const corridorParams = {
+        width: 30,
+        height: 15,
+        depth: 200, // Reduced depth
+        segmentCount: 30, // Reduced segments
+        particleCount: 300 // Reduced particles
+      };
+
+      // Create optimized scene elements
+      this.createOptimizedTunnel(scene, corridorParams, THREE);
+      this.createOptimizedParticles(scene, corridorParams, THREE);
+      this.setupBasicLighting(scene, THREE);
+
+      camera.position.set(0, 3, 15);
+      const cameraTarget = new THREE.Vector3(0, 0, -100);
+      
+      // Optimized animation loop with RAF throttling
+      const clock = new THREE.Clock();
+      let lastTime = 0;
+      let frameCount = 0;
+      
+      const animate = () => {
+        frameCount++;
+        // Render every other frame for performance
+        if (frameCount % 2 === 0) {
+          const time = clock.getElapsedTime();
+          const deltaTime = time - lastTime;
+          lastTime = time;
+          
+          camera.position.z -= deltaTime * 8; // Reduced speed
+          camera.lookAt(cameraTarget);
+          
+          if (camera.position.z < -corridorParams.depth * 0.5) {
+            camera.position.z = 15;
+          }
+          
+          renderer.render(scene, camera);
+        }
+        
+        this.animationFrameId = requestAnimationFrame(animate);
+      };
+      
+      animate();
+
+      // Optimized resize handler
+      window.addEventListener('resize', () => this.resizeHandler(() => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-      }, 250);
-    });
+      }));
+
+    } catch (error) {
+      console.error('Failed to initialize 3D scene:', error);
+      corridorContainer.style.display = 'none';
+    }
   }
 
-  createOptimizedTunnel(scene, params) {
-    // Simplified tunnel geometry
+  createOptimizedTunnel(scene, params, THREE) {
+    // Use lower polygon count for tunnel
     const tunnelGeometry = new THREE.CylinderGeometry(
-      params.width * 0.8, 
-      params.width, 
-      params.depth, 
-      32, // Reduced segments
-      32, 
+      params.width * 0.8,
+      params.width,
+      params.depth,
+      24, // Reduced segments
+      24,
       true
     );
     
-    const tunnelMaterial = new THREE.MeshStandardMaterial({
+    // Use basic material instead of standard for better performance
+    const tunnelMaterial = new THREE.MeshBasicMaterial({
       color: 0x0a0a1a,
       side: THREE.BackSide,
       transparent: true,
-      opacity: 0.95,
-      roughness: 0.9,
-      metalness: 0.1
+      opacity: 0.95
     });
     
     const tunnel = new THREE.Mesh(tunnelGeometry, tunnelMaterial);
@@ -160,23 +225,23 @@ class OptimizedVisualEngine {
     tunnel.position.z = -params.depth / 2;
     scene.add(tunnel);
     
-    // Add minimal energy rings
-    for (let i = 0; i < params.segmentCount; i++) {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(params.width * 0.9, 0.2, 8, 32), // Reduced segments
-        new THREE.MeshBasicMaterial({
-          color: 0x1a1a2a,
-          transparent: true,
-          opacity: 0.2
-        })
-      );
+    // Reduced number of rings
+    const ringGeometry = new THREE.TorusGeometry(params.width * 0.9, 0.2, 6, 24);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: 0x1a1a2a,
+      transparent: true,
+      opacity: 0.2
+    });
+    
+    for (let i = 0; i < params.segmentCount; i += 2) { // Skip every other ring
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
       ring.rotation.x = Math.PI / 2;
       ring.position.z = -i * (params.depth / params.segmentCount);
       scene.add(ring);
     }
   }
 
-  createOptimizedParticles(scene, params) {
+  createOptimizedParticles(scene, params, THREE) {
     const particlesGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(params.particleCount * 3);
     
@@ -203,7 +268,7 @@ class OptimizedVisualEngine {
     scene.add(particles);
   }
 
-  setupBasicLighting(scene) {
+  setupBasicLighting(scene, THREE) {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     
@@ -322,7 +387,7 @@ class OptimizedVisualEngine {
 
     // Autoplay functionality
     const startAutoplay = () => {
-      autoplayInterval = setInterval(nextTestimonial, 5000); // Change slide every 5 seconds
+      autoplayInterval = setInterval(nextTestimonial, 3500); // Change slide every 3.5 seconds
     };
 
     const resetAutoplay = () => {
@@ -339,10 +404,11 @@ class OptimizedVisualEngine {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    if (!tabButtons.length || !tabContents.length) return;
+
     const showTab = (tabId) => {
       // Hide all tab contents
       tabContents.forEach(content => {
-        content.style.display = 'none';
         content.classList.remove('active');
       });
 
@@ -356,15 +422,8 @@ class OptimizedVisualEngine {
       const selectedBtn = document.querySelector(`[data-tab="${tabId}"]`);
       
       if (selectedTab && selectedBtn) {
-        selectedTab.style.display = 'block';
         selectedTab.classList.add('active');
         selectedBtn.classList.add('active');
-
-        // Animate the content
-        gsap.fromTo(selectedTab,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
-        );
       }
     };
 
@@ -394,6 +453,31 @@ class OptimizedVisualEngine {
     const videoWrapper = document.querySelector('.video-wrapper');
 
     if (!video || !playBtn || !progressBar || !videoProgress) return;
+
+    // Add click event to play button
+    playBtn.addEventListener('click', () => togglePlay());
+    
+    // Add click event to video
+    video.addEventListener('click', () => togglePlay());
+    
+    // Update progress as video plays
+    video.addEventListener('timeupdate', () => updateProgress());
+    
+    // Update duration once metadata is loaded
+    video.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = formatTime(video.duration);
+    });
+    
+    // Handle video end
+    video.addEventListener('ended', () => {
+      playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+      videoWrapper.classList.remove('playing');
+    });
+
+    // Add fullscreen button event
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', () => toggleFullscreen());
+    }
 
     // Format time in MM:SS format
     const formatTime = (seconds) => {
@@ -556,22 +640,6 @@ class OptimizedVisualEngine {
       }
     };
 
-    // Event Listeners
-    playBtn.addEventListener('click', togglePlay);
-    video.addEventListener('click', togglePlay);
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-    video.addEventListener('loadedmetadata', () => {
-      durationEl.textContent = formatTime(video.duration);
-      updateProgress();
-    });
-
-    video.addEventListener('timeupdate', updateProgress);
-    video.addEventListener('ended', () => {
-      playBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
-      videoWrapper.classList.remove('playing');
-    });
-
     // Handle fullscreen change events
     document.addEventListener('fullscreenchange', updateFullscreenButton);
     document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
@@ -627,9 +695,35 @@ class OptimizedVisualEngine {
       });
     }
   }
+
+  handleResize() {
+    // Implementation moved to class method for better organization
+    if (this.renderer && this.camera) {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  }
+
+  cleanup() {
+    // Cleanup method to prevent memory leaks
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    
+    // Remove event listeners
+    window.removeEventListener('resize', this.resizeHandler);
+    
+    // Dispose of Three.js resources
+    if (this.renderer) {
+      this.renderer.dispose();
+    }
+  }
 }
 
-// Initialize the optimized visual engine
-document.addEventListener('DOMContentLoaded', () => {
-  new OptimizedVisualEngine();
-});
+// Initialize with error handling
+try {
+  window.visualEngine = new OptimizedVisualEngine();
+} catch (error) {
+  console.error('Failed to initialize Visual Engine:', error);
+}

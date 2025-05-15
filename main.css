@@ -1,5 +1,5 @@
 /* ==========================================================================
-   REVOLUTIONARY 3D CORRIDOR FLEET TRACKER STYLES
+   REVOLUTIONARY 3D CORRIDOR FLEET TRACKER STYLES - OPTIMIZED VERSION
    ========================================================================== */
 
 /* ==========================================================================
@@ -23,9 +23,9 @@
     --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.2);
     --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.3);
-    --transition-fast: all 0.2s ease;
-    --transition-medium: all 0.3s ease;
-    --transition-slow: all 0.5s ease;
+    --transition-fast: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    --transition-medium: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+    --transition-slow: transform 0.5s ease, opacity 0.5s ease;
     --border-radius-sm: 8px;
     --border-radius-md: 16px;
     --border-radius-lg: 24px;
@@ -34,6 +34,7 @@
     --nav-height: 80px;
 }
 
+/* Base Styles - Optimized */
 * {
     margin: 0;
     padding: 0;
@@ -44,6 +45,8 @@ html {
     scroll-behavior: smooth;
     font-size: 16px;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -53,8 +56,10 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     position: relative;
+    will-change: transform;
 }
 
+/* Typography - Optimized */
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
@@ -101,6 +106,9 @@ ul, ol {
     z-index: -1;
     overflow: hidden;
     perspective: 1500px;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
 }
 
 /* Canvas will be injected by Three.js */
@@ -111,6 +119,8 @@ ul, ol {
     width: 100%;
     height: 100%;
     opacity: 0.8;
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 /* ==========================================================================
@@ -126,8 +136,10 @@ ul, ol {
     z-index: 1000;
     background: rgba(10, 10, 26, 0.95);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(42, 91, 215, 0.2);
-    transition: var(--transition-medium);
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .nav-container {
@@ -252,7 +264,7 @@ ul, ol {
     padding-top: var(--nav-height);
     display: flex;
     align-items: center;
-    overflow: hidden;
+    transform: translateZ(0);
 }
 
 .section-container {
@@ -266,6 +278,7 @@ ul, ol {
     max-width: 600px;
     position: relative;
     z-index: 2;
+    transform: translateZ(0);
 }
 
 .hero-title {
@@ -847,6 +860,7 @@ ul, ol {
 .solution-card {
     background: rgba(26, 26, 46, 0.8);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--border-radius-md);
     padding: 2rem;
     border: 1px solid rgba(42, 91, 215, 0.2);
@@ -989,6 +1003,7 @@ ul, ol {
 .testimonial-content {
     background: rgba(26, 26, 46, 0.8);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--border-radius-md);
     padding: 2rem;
     border: 1px solid rgba(42, 91, 215, 0.2);
@@ -1118,6 +1133,7 @@ ul, ol {
 .pricing-card {
     background: rgba(26, 26, 46, 0.8);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--border-radius-md);
     padding: 2rem;
     border: 1px solid rgba(42, 91, 215, 0.2);
@@ -1563,13 +1579,13 @@ ul, ol {
    ========================================================================== */
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px) translateZ(0); }
+    to { opacity: 1; transform: translateY(0) translateZ(0); }
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0) translateZ(0); }
+    50% { transform: translateY(-10px) translateZ(0); }
 }
 
 @keyframes scroll {
@@ -1595,6 +1611,7 @@ ul, ol {
 @media (max-width: 1200px) {
     .hero-visual {
         width: 45%;
+        transform: translateZ(0);
     }
     
     .feature-grid {
@@ -1613,15 +1630,11 @@ ul, ol {
         --section-padding: 6rem 0;
     }
     
-    .hero-content {
-        max-width: 100%;
-        text-align: center;
-    }
-    
+    .hero-content,
     .hero-subtitle {
         max-width: 100%;
-        margin-left: auto;
-        margin-right: auto;
+        text-align: center;
+        margin: 0 auto;
     }
     
     .hero-actions {
@@ -1687,6 +1700,7 @@ ul, ol {
 @media (max-width: 768px) {
     :root {
         --section-padding: 4rem 0;
+        --nav-height: 70px;
     }
     
     .nav-links {
@@ -1696,17 +1710,18 @@ ul, ol {
         width: 100%;
         height: 100vh;
         background: var(--dark-bg);
+        display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         gap: 2rem;
-        transform: translateX(100%);
+        transform: translateX(100%) translateZ(0);
         transition: var(--transition-medium);
-        z-index: 1000;
+        will-change: transform;
     }
     
     .nav-links.active {
-        transform: translateX(0);
+        transform: translateX(0) translateZ(0);
     }
     
     .mobile-menu-toggle {
@@ -1764,10 +1779,6 @@ ul, ol {
 }
 
 @media (max-width: 576px) {
-    :root {
-        --nav-height: 70px;
-    }
-    
     .hero-title {
         font-size: 2rem;
     }
@@ -1863,13 +1874,14 @@ html {
 /* Animation Classes */
 .fade-in {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) translateZ(0);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: transform, opacity;
 }
 
 .fade-in.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
 }
 
 .slide-in-left {
@@ -1944,8 +1956,8 @@ html {
 
 /* Floating Animation */
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0) translateZ(0); }
+    50% { transform: translateY(-10px) translateZ(0); }
 }
 
 .float {
@@ -1969,6 +1981,7 @@ html {
 .loading {
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
 }
 
 .loading::after {
@@ -1980,9 +1993,31 @@ html {
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     animation: loading 1.5s infinite;
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 @keyframes loading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% { transform: translateX(-100%) translateZ(0); }
+    100% { transform: translateX(100%) translateZ(0); }
+}
+
+/* Performance Optimizations */
+.transform-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.transition-gpu {
+    transition: transform 0.3s ease;
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* Reduce Paint Operations */
+.no-paint {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform, opacity;
 }
