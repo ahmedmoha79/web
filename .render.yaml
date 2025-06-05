@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: wazambi-site
+    env: static
+    staticPublishPath: .
+
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    headers:
+      - source: "**/*.css"
+        headers:
+          - key: Content-Type
+            value: text/css
+      - source: "**/*.js"
+        headers:
+          - key: Content-Type
+            value: application/javascript
+      - source: "**/*.html"
+        headers:
+          - key: Content-Type
+            value: text/html
+      - source: "**/*.png"
+        headers:
+          - key: Content-Type
+            value: image/png
+          - key: Cache-Control
+            value: public, max-age=31536000
+      - source: "**/*.jpg"
+        headers:
+          - key: Content-Type
+            value: image/jpeg
+          - key: Cache-Control
+            value: public, max-age=31536000
+      - source: "**/*.gif"
+        headers:
+          - key: Content-Type
+            value: image/gif
+          - key: Cache-Control
+            value: public, max-age=31536000
